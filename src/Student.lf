@@ -2,7 +2,7 @@ target Python
 
 import FrostMachine from "../frost/src/lib/FrostMachine.lf"
 
-reactor User extends FrostMachine{
+reactor Student extends FrostMachine{
     input start
     state method_node
     state student_name = "Bob"

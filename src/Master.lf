@@ -31,7 +31,7 @@ reactor Master extends FrostBase{
                 .with_method_invoke_header()\
                 .with_method_payload(node="Methods/answer", args=[f"Hello, what's your name?"])
             message = self.builder.build()
-            self.logger.warning(f"{self.name}: {message.payload.args[0]}")
+            self.logger.info(f"{self.name}: {message.payload.args[0]}")
             self._set_channel_out_port(message, channel_out)
     =}
 
@@ -39,8 +39,7 @@ reactor Master extends FrostBase{
         self.logger.info(f"Master {self.name} received a message: {channel_in.value}")
         message = channel_in.value[0]
         if message.header.type == MsgType.RESPONSE and message.header.namespace == MsgNamespace.METHOD:
-            self.logger.warning(f"{message.sender}: {message.payload.ret["response"]}")
-
+            self.logger.info(f"{message.sender}: {message.payload.ret["response"]}")
     =}
 
 }

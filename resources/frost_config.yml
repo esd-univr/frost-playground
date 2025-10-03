@@ -17,3 +17,17 @@ reactors:
         logging_level: WARNING
   master:
     logging_level: WARNING
+  publisher:
+    logging_level: WARNING
+    parameters:
+      data_model_path: "resources/data_model/publisher.yml"
+    reactors:
+      message_filter:
+        logging_level: WARNING
+  subscriber:
+    logging_level: WARNING
+    parameters:
+      data_model_path: "resources/data_model/subscriber.yml"
+    reactors:
+      message_filter:
+        logging_level: WARNING

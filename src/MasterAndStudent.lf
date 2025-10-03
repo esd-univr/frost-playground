@@ -11,7 +11,7 @@ target Python{
 }
 
 import FrostBus from "../frost/src/lib/FrostBus.lf"
-import User from "User.lf"
+import Student from "Student.lf"
 import Master from "Master.lf"
 
 
@@ -37,8 +37,6 @@ preamble{=
     from machine_data_model.nodes.folder_node import FolderNode
 =}
 
-
-
 main reactor{
     '''
     This examples shows a master and a student that communicate using the Frost protocol.
@@ -50,19 +48,16 @@ main reactor{
     =}
 
     bus = new FrostBus(name="frost_bus", width = 2)
-    user1 = new User(name="student")
+    student = new Student(name="student")
     master = new Master(name="master")
 
-    user1.channel_out, master.channel_out -> bus.channel_in after 1 sec
-    bus.channel_out -> user1.channel_in, master.channel_in after 1 sec
+    student.channel_out, master.channel_out -> bus.channel_in after 1 sec
+    bus.channel_out -> student.channel_in, master.channel_in after 1 sec
 
     logical action delay
 
-    reaction(startup) -> delay{=
-        delay.schedule(SEC(2))
-    =}
 
-    reaction(delay)-> master.start{=
+    reaction(startup)-> master.start{=
         master.start.set(True)
     =}
 }

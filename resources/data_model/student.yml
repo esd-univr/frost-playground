@@ -6,7 +6,7 @@ description: "User" # description of the machine
 root:
   !!FolderNode
   name: "Methods"
-  description: "OPCUA"
+  description: "none"
   children:
     - !!AsyncMethodNode
       name: "answer"
