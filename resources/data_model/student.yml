@@ -1,0 +1,23 @@
+name: "student" # name of the machine
+machine_category: "unknown" # category of the machine
+machine_type: "unknown" # type of the machine
+machine_model: "unknown" # model of the machine
+description: "User" # description of the machine
+root:
+  !!FolderNode
+  name: "Methods"
+  description: "OPCUA"
+  children:
+    - !!AsyncMethodNode
+      name: "answer"
+      description: "Answer to the message"
+      parameters:
+        - !!StringVariableNode
+          name: "message"
+          description: "message to answer"
+          default_value: ""
+      returns:
+        - !!StringVariableNode
+          name: "response"
+          description: "response message"
+          default_value: ""

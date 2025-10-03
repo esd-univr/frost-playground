@@ -1,0 +1,21 @@
+target Python
+
+import FrostMachine from "../frost/src/lib/FrostMachine.lf"
+
+reactor User extends FrostMachine{
+    input start
+    state method_node
+    state student_name = "Bob"
+    reaction(startup){=
+        method_node = self.data_model.get_node("Methods/answer")
+        method_node.callback = self.answer
+    =}
+
+    method answer(message){=
+        self.logger.info(f"User {self.name} received a message: {message}")
+        if message == None or message == "":
+            raise Exception("Input message is None or empty")
+        return self.student_name
+    =}
+
+}

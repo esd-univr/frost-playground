@@ -1,6 +1,6 @@
 target Python{
     fast: True,
-    timeout: 3600s,
+    timeout: 10s,
     files: [
         "../frost/src/python_lib/frost.py",
         "../frost/src/python_lib/l_formatter.py",
@@ -11,6 +11,10 @@ target Python{
 }
 
 import FrostBus from "../frost/src/lib/FrostBus.lf"
+import User from "User.lf"
+import Master from "Master.lf"
+
+
 
 preamble{= 
     import uuid
@@ -21,10 +25,11 @@ preamble{=
     from enum import Enum
     from frost import FROST_CONFIG, is_target_valid
     from machine_data_model.protocols.frost_v1.frost_message import FrostMessage
-    from machine_data_model.protocols.frost_v1.frost_header import MsgType, MsgNamespace, ProtocolMsgName, FrostHeader
+    from machine_data_model.protocols.frost_v1.frost_header import MsgType, MsgNamespace, ProtocolMsgName, FrostHeader, MethodMsgName
     from machine_data_model.protocols.frost_v1.frost_payload import VariablePayload, ProtocolPayload, MethodPayload, ErrorPayload
     from machine_data_model.protocols.frost_v1.frost_protocol_mng import FrostProtocolMng
     from machine_data_model.builder.data_model_builder import DataModelBuilder
+    from machine_data_model.protocols.frost_v1.frost_message_builder import FrostMessageBuilder
     from machine_data_model.protocols.protocol_mng import Message
     from machine_data_model.nodes.method_node import MethodNode, AsyncMethodNode
     from machine_data_model.nodes.composite_method.composite_method_node import CompositeMethodNode
@@ -32,10 +37,32 @@ preamble{=
     from machine_data_model.nodes.folder_node import FolderNode
 =}
 
+
+
 main reactor{
+    '''
+    This examples shows a master and a student that communicate using the Frost protocol.
+    The master sends a message to the student invoking a method "answer" with a string argument.
+    The student receives the message, executes the method and returns a string as a response.
+    '''
     preamble{=
         #Import local library
     =}
 
     bus = new FrostBus(name="frost_bus", width = 2)
+    user1 = new User(name="student")
+    master = new Master(name="master")
+
+    user1.channel_out, master.channel_out -> bus.channel_in after 1 sec
+    bus.channel_out -> user1.channel_in, master.channel_in after 1 sec
+
+    logical action delay
+
+    reaction(startup) -> delay{=
+        delay.schedule(SEC(2))
+    =}
+
+    reaction(delay)-> master.start{=
+        master.start.set(True)
+    =}
 }

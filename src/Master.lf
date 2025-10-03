@@ -1,0 +1,46 @@
+target Python
+
+import FrostBase from "../frost/src/lib/FrostBase.lf"
+
+reactor Master extends FrostBase{
+
+
+    input channel_in
+    output channel_out
+    state builder = {=FrostMessageBuilder()=}
+
+    reaction(startup) -> channel_out{=
+        self.logger.info(f"Master {self.name} started")
+        message = self.builder.with_sender(self.name)\
+            .with_target("frost_bus")\
+            .with_identifier(str(uuid.uuid4()))\
+            . with_protocol_register_request_header()\
+            .with_protocol_payload()\
+            .build()
+        self.logger.info(f"Master {self.name} sent a message: {message}")
+        channel_out.set([message])
+    =}
+
+    input start
+    reaction(start) -> channel_out{=
+        self.logger.info(f"User {self.name} start signal received: {start.value}")
+        if start.value:
+            self.builder.with_sender(self.name)\
+                .with_target("student")\
+                .with_identifier(str(uuid.uuid4()))\
+                .with_method_invoke_header()\
+                .with_method_payload(node="Methods/answer", args=[f"Hello, what's your name?"])
+            message = self.builder.build()
+            self.logger.warning(f"{self.name}: {message.payload.args[0]}")
+            self._set_channel_out_port(message, channel_out)
+    =}
+
+    reaction(channel_in) -> channel_out{=
+        self.logger.info(f"Master {self.name} received a message: {channel_in.value}")
+        message = channel_in.value[0]
+        if message.header.type == MsgType.RESPONSE and message.header.namespace == MsgNamespace.METHOD:
+            self.logger.warning(f"{message.sender}: {message.payload.ret["response"]}")
+
+    =}
+
+}

@@ -1,0 +1,1 @@
+machine-data-model @ git+https://github.com/esd-univr/machine-data-model.git@feature/frost_message_builder
