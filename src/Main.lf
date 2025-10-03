@@ -1,0 +1,41 @@
+target Python{
+    fast: True,
+    timeout: 3600s,
+    files: [
+        "../frost/src/python_lib/frost.py",
+        "../frost/src/python_lib/l_formatter.py",
+        "../frost/src/python_lib/time_utils.py"
+    ],
+    logging: error,
+    single-threaded: false,
+}
+
+import FrostBus from "../frost/src/lib/FrostBus.lf"
+
+preamble{= 
+    import uuid
+    import yaml
+    import math 
+    import os 
+    import logging
+    from enum import Enum
+    from frost import FROST_CONFIG, is_target_valid
+    from machine_data_model.protocols.frost_v1.frost_message import FrostMessage
+    from machine_data_model.protocols.frost_v1.frost_header import MsgType, MsgNamespace, ProtocolMsgName, FrostHeader
+    from machine_data_model.protocols.frost_v1.frost_payload import VariablePayload, ProtocolPayload, MethodPayload, ErrorPayload
+    from machine_data_model.protocols.frost_v1.frost_protocol_mng import FrostProtocolMng
+    from machine_data_model.builder.data_model_builder import DataModelBuilder
+    from machine_data_model.protocols.protocol_mng import Message
+    from machine_data_model.nodes.method_node import MethodNode, AsyncMethodNode
+    from machine_data_model.nodes.composite_method.composite_method_node import CompositeMethodNode
+    from machine_data_model.nodes.variable_node import NumericalVariableNode, StringVariableNode, BooleanVariableNode, ObjectVariableNode
+    from machine_data_model.nodes.folder_node import FolderNode
+=}
+
+main reactor{
+    preamble{=
+        #Import local library
+    =}
+
+    bus = new FrostBus(name="frost_bus", width = 2)
+}
