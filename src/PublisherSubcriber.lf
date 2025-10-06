@@ -13,27 +13,10 @@ import FrostDataModel from "../frost/src/lib/FrostDataModel.lf"
 
 preamble{=
     import uuid
-    import yaml
-    import math 
-    import os 
-    import logging
-    from enum import Enum
-    from frost import FROST_CONFIG, is_target_valid
-    from machine_data_model.protocols.frost_v1.frost_message import FrostMessage
-    from machine_data_model.protocols.frost_v1.frost_header import MsgType, MsgNamespace, ProtocolMsgName, FrostHeader, MethodMsgName, VariableMsgName
-    from machine_data_model.protocols.frost_v1.frost_payload import VariablePayload, ProtocolPayload, MethodPayload, ErrorPayload
-    from machine_data_model.protocols.frost_v1.frost_protocol_mng import FrostProtocolMng
-    from machine_data_model.builder.data_model_builder import DataModelBuilder
-    from machine_data_model.protocols.frost_v1.frost_message_builder import FrostMessageBuilder
-    from machine_data_model.protocols.protocol_mng import Message
-    from machine_data_model.nodes.method_node import MethodNode, AsyncMethodNode
-    from machine_data_model.nodes.composite_method.composite_method_node import CompositeMethodNode
-    from machine_data_model.nodes.variable_node import NumericalVariableNode, StringVariableNode, BooleanVariableNode, ObjectVariableNode
-    from machine_data_model.nodes.folder_node import FolderNode
+    from frost import *
 =}
 
 reactor Publisher extends FrostDataModel{
-    state builder = {=FrostMessageBuilder()=}
     state words = ["Hello", "world", "this", "is", "a", "test", "message"]
     state word_node
 
@@ -56,17 +39,23 @@ reactor Publisher extends FrostDataModel{
 }
 
 reactor Subscriber extends FrostDataModel{    
-    state builder = {=FrostMessageBuilder()=}
     state sentence
 
     reaction(startup) -> channel_out{=
         self.sentence = self.data_model.get_node("root/sentence")
         self.logger.info(f"{self.name} subscribed to the topic 'word'")
-        message = self.builder.with_sender(self.name).with_target(
-            "publisher"
-        ).with_variable_subscribe_request_header().with_subscription_payload(
-            node="root/word"
-        ).build()
+        message = FrostMessage(
+            sender = self.name,
+            target = "publisher",
+            identifier = str(uuid.uuid4()),
+            header = FrostHeader(
+                type = MsgType.REQUEST,
+                version = (1,0,0),
+                namespace = MsgNamespace.VARIABLE,
+                msg_name = VariableMsgName.SUBSCRIBE,
+            ),
+            payload = VariablePayload(node = "root/word"),
+        )
         self.logger.info(f"{self.name} sent a subscribe message: {message}")
         self._set_output_port(message, channel_out)
     =}
@@ -85,8 +74,6 @@ reactor Subscriber extends FrostDataModel{
 }
 
 main reactor{
-
-
     publisher = new Publisher(name = "publisher")
     subscriber = new Subscriber(name = "subscriber")
 

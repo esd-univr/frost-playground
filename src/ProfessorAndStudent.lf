@@ -1,0 +1,47 @@
+target Python{
+    fast: True,
+    timeout: 10s,
+    files: [
+        "../frost/src/python_lib/frost.py",
+        "../frost/src/python_lib/l_formatter.py",
+        "../frost/src/python_lib/time_utils.py"
+    ],
+    logging: error,
+    single-threaded: false,
+}
+
+import FrostBus from "../frost/src/lib/FrostBus.lf"
+import Student from "Student.lf"
+import Professor from "Professor.lf"
+
+
+
+preamble{= 
+    import uuid
+    from frost import *
+=}
+
+main reactor{
+    '''
+    This examples shows a professor and a student that communicate using the Frost protocol.
+    The professor sends a message to the student invoking a method "answer" with a string argument.
+    The student receives the message, executes the method and returns a string as a response.
+    '''
+    preamble{=
+        #Import local library
+    =}
+
+    bus = new FrostBus(name="frost_bus", width = 2)
+    student = new Student(name="student")
+    professor = new Professor(name="professor")
+
+    student.channel_out, professor.channel_out -> bus.channel_in after 1 sec
+    bus.channel_out -> student.channel_in, professor.channel_in after 1 sec
+
+    logical action delay
+
+
+    reaction(startup)-> professor.start{=
+        professor.start.set(True)
+    =}
+}

@@ -15,7 +15,7 @@ reactors:
     reactors:
       message_filter:
         logging_level: WARNING
-  master:
+  professor:
     logging_level: WARNING
   publisher:
     logging_level: WARNING
