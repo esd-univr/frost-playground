@@ -2,14 +2,14 @@ target Python
 
 import FrostBase from "../frost/src/lib/FrostBase.lf"
 
-reactor Professor extends FrostBase{
+reactor Initiator extends FrostBase{
 
 
     input channel_in
     output channel_out
 
     reaction(startup) -> channel_out{=
-        self.logger.info(f"Professor {self.name} started")
+        self.logger.info(f"Initiator {self.name} started")
         message = FrostMessage(
             sender=self.name,
             target="frost_bus",
@@ -22,7 +22,7 @@ reactor Professor extends FrostBase{
             ),
             payload=ProtocolPayload(),
         )
-        self.logger.info(f"Professor {self.name} sent a message: {message}")
+        self.logger.info(f"Initiator {self.name} sent a message: {message}")
         channel_out.set([message])
     =}
 
@@ -51,7 +51,7 @@ reactor Professor extends FrostBase{
     =}
 
     reaction(channel_in) -> channel_out{=
-        self.logger.info(f"Professor {self.name} received a message: {channel_in.value}")
+        self.logger.info(f"Initiator {self.name} received a message: {channel_in.value}")
         message = channel_in.value[0]
         if message.header.type == MsgType.RESPONSE and message.header.namespace == MsgNamespace.METHOD:
             self.logger.info(f"{message.sender}: {message.payload.ret["response"]}")

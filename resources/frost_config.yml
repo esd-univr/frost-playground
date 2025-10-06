@@ -1,33 +1,33 @@
 time_precision: MSECS
-logging_level: WARNING
+logging_level: INFO
 reactors:
   frost_bus:
-    logging_level: WARNING
+    logging_level: INFO
     parameters:
       data_model_path: "resources/data_model/frost_bus.yml"
     reactors:
       message_filter:
-        logging_level: WARNING
-  student:
-    logging_level: WARNING
+        logging_level: INFO
+  target:
+    logging_level: INFO
     parameters:
-      data_model_path: "resources/data_model/student.yml"
+      data_model_path: "resources/data_model/target.yml"
     reactors:
       message_filter:
-        logging_level: WARNING
-  professor:
-    logging_level: WARNING
+        logging_level: INFO
+  initiator:
+    logging_level: INFO
   publisher:
-    logging_level: WARNING
+    logging_level: INFO
     parameters:
       data_model_path: "resources/data_model/publisher.yml"
     reactors:
       message_filter:
-        logging_level: WARNING
+        logging_level: INFO
   subscriber:
-    logging_level: WARNING
+    logging_level: INFO
     parameters:
       data_model_path: "resources/data_model/subscriber.yml"
     reactors:
       message_filter:
-        logging_level: WARNING
+        logging_level: INFO

@@ -1,0 +1,47 @@
+target Python{
+    fast: True,
+    timeout: 10s,
+    files: [
+        "../frost/src/python_lib/frost.py",
+        "../frost/src/python_lib/l_formatter.py",
+        "../frost/src/python_lib/time_utils.py"
+    ],
+    logging: error,
+    single-threaded: false,
+}
+
+import FrostBus from "../frost/src/lib/FrostBus.lf"
+import Target from "Target.lf"
+import Initiator from "Initiator.lf"
+
+
+
+preamble{= 
+    import uuid
+    from frost import *
+=}
+
+main reactor{
+    '''
+    This examples shows a Initiator and a Target that communicate using the Frost protocol.
+    The Initiator sends a message to the Target invoking a method "answer" with a string argument.
+    The Target receives the message, executes the method and returns a string as a response.
+    '''
+    preamble{=
+        #Import local library
+    =}
+
+    bus = new FrostBus(name="frost_bus", width = 2)
+    Target = new Target(name="target")
+    Initiator = new Initiator(name="initiator")
+
+    Target.channel_out, Initiator.channel_out -> bus.channel_in after 1 sec
+    bus.channel_out -> Target.channel_in, Initiator.channel_in after 1 sec
+
+    logical action delay
+
+
+    reaction(startup)-> Initiator.start{=
+        Initiator.start.set(True)
+    =}
+}

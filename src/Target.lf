@@ -2,7 +2,7 @@ target Python
 
 import FrostMachine from "../frost/src/lib/FrostMachine.lf"
 
-reactor Student extends FrostMachine{
+reactor Target extends FrostMachine{
     input start
     state method_node
     state student_name = "Bob"
@@ -12,7 +12,7 @@ reactor Student extends FrostMachine{
     =}
 
     method answer(message){=
-        self.logger.info(f"User {self.name} received a message: {message}")
+        self.logger.info(f"{self.name} received a message: {message}")
         if message == None or message == "":
             raise Exception("Input message is None or empty")
         return self.student_name
