@@ -9,7 +9,7 @@ target Python{
     single-threaded: false,
 }
 
-import FrostDataModel from "../../frost/src/lib/FrostDataModel.lf"
+import FrostDataModel from "../frost/src/lib/FrostDataModel.lf"
 
 preamble{=
     import uuid

@@ -1,32 +1,22 @@
-FROM ubuntu:22.04
-
-ENV DEBIAN_FRONTEND=noninteractive
+FROM python:3.13-alpine3.22 AS venv_builder
 
 # Install system dependencies, including those for compiling lingo and Python dev files
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    build-essential \
-    cmake \
-    curl \
-    git \
-    openjdk-17-jdk \
-    python3 \
-    python3-pip \
-    python3-venv \
-    python3-dev \
-    pkg-config \
-    libssl-dev && \
-    rm -rf /var/lib/apt/lists/*
+RUN pip install --upgrade pip && pip install virtualenv && python -m venv /venv
+RUN apk add --update --no-cache --virtual .tmp-build-deps git gcc g++ libc-dev make cmake python3-dev zlib-dev curl bash openjdk17-jre
 
 # Install Lingua Franca compiler (lfc)
 RUN curl -Ls https://install.lf-lang.org | bash -s cli
+ENV PATH="/root/.local/bin:${PATH}"
 
-# Install Python dependencies
+# ICE Frost dependencies
 COPY requirements.txt /tmp/requirements.txt
-RUN python3 -m pip install -r /tmp/requirements.txt
+RUN /venv/bin/pip install -r /tmp/requirements.txt
 
-COPY . /app
+# Copy the configuration files and data models
+COPY src /app/src
+COPY frost /app/frost
+COPY resources /app/resources
+
 WORKDIR /app
 
-# start bash shell by default
-CMD ["bash"]
+CMD ["/bin/sh"]
