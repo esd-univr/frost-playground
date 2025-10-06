@@ -21,19 +21,7 @@ RUN apt-get update && \
 # Install Lingua Franca compiler (lfc)
 RUN curl -Ls https://install.lf-lang.org | bash -s cli
 
-# Install Rust and Cargo for Lingo 
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-
-# Configure the environment PATH to include all newly installed binaries
-ENV PATH="/root/.lf/bin:/root/.cargo/bin:/root/.local/bin:${PATH}"
-
-# Clone the Lingo repository, build and install it using cargo, then clean up.
-RUN git clone https://github.com/lf-lang/lingo.git /tmp/lingo && \
-    cd /tmp/lingo && \
-    cargo install --path . && \
-    cd / && \
-    rm -rf /tmp/lingo
-
+# Install Python dependencies
 COPY requirements.txt /tmp/requirements.txt
 RUN python3 -m pip install -r /tmp/requirements.txt
 
