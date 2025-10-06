@@ -18,7 +18,7 @@
   "mounts": [
     // REMOVE-BY-CI "type=bind,source=/home/runner/logs,target=/workspaces/.codespaces/.persistedshare/logs"
   ],
-  "remoteUser": "vscode",
+  // "remoteUser": "vscode",
   "remoteEnv": {
       // // Unsure if this is a good idea, as other people might fork this and change name
       // "LF_PATH": "${containerWorkspaceFolder}/lingua-franca",
