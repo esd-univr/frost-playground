@@ -8,8 +8,7 @@
   },
   "waitFor": "postCreateCommand",
   "postCreateCommand": {
-    "init-submodules": "git submodule update --init --recursive",
-    "activate-venv": "source /venv/bin/activate"
+    "init-submodules": "git submodule update --init --recursive"
   },
   "customizations": {
     "codespaces": {
