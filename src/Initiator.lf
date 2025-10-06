@@ -32,7 +32,7 @@ reactor Initiator extends FrostBase{
         if start.value:
             message = FrostMessage(
                 sender=self.name,
-                target="student",
+                target="target",
                 identifier=str(uuid.uuid4()),
                 header=FrostHeader(
                     type=MsgType.REQUEST,

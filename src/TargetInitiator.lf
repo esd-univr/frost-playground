@@ -35,13 +35,16 @@ main reactor{
     Target = new Target(name="target")
     Initiator = new Initiator(name="initiator")
 
-    Target.channel_out, Initiator.channel_out -> bus.channel_in after 1 sec
-    bus.channel_out -> Target.channel_in, Initiator.channel_in after 1 sec
+    Target.channel_out, Initiator.channel_out -> bus.channel_in after 0 sec
+    bus.channel_out -> Target.channel_in, Initiator.channel_in after 0 sec
 
     logical action delay
 
+    reaction(delay) -> Initiator.start{=
+        Initiator.start.set([True])
+    =}
 
-    reaction(startup)-> Initiator.start{=
-        Initiator.start.set(True)
+    reaction(startup)-> delay{=
+        delay.schedule(SEC(1))
     =}
 }
