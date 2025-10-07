@@ -33,22 +33,23 @@ reactor Sensor extends FrostMachine{
         new_value = random.random()
         self.detected.value = True if new_value > 0.9 else False
 
-        message = FrostMessage(
-            sender=self.name,
-            target="alarm",
-            identifier=str(uuid.uuid4()),
-            header=FrostHeader(
-                type=MsgType.REQUEST,
-                version=(1, 0, 0),
-                namespace=MsgNamespace.VARIABLE,
-                msg_name=VariableMsgName.WRITE,
-            ),
-            payload=VariablePayload(
-                node="root/ringing",
-                value=self.detected.value,
-            ),
-        )
-        self._set_channel_out_port(message, channel_out)
+        if self.detected.value:
+            message = FrostMessage(
+                sender=self.name,
+                target="alarm",
+                identifier=str(uuid.uuid4()),
+                header=FrostHeader(
+                    type=MsgType.REQUEST,
+                    version=(1, 0, 0),
+                    namespace=MsgNamespace.VARIABLE,
+                    msg_name=VariableMsgName.WRITE,
+                ),
+                payload=VariablePayload(
+                    node="root/ringing",
+                    value=self.detected.value,
+                ),
+            )
+            self._set_channel_out_port(message, channel_out)
     =}
 
 }
@@ -66,6 +67,7 @@ reactor Alarm extends FrostMachine{
     reaction(check_status){=
         if self.ringing.value:
             self.logger.error(f"Alarm is RINGING!")
+            lf.request_stop()
         else:
             self.logger.info(f"\n")
     =}

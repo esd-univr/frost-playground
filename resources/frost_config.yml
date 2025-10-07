@@ -39,3 +39,12 @@ reactors:
     logging_level: INFO
     parameters:
       data_model_path: "resources/data_model/alarm.yml"
+  stock_market:
+    logging_level: INFO
+    parameters:
+      data_model_path: "resources/data_model/stock_market.yml"
+    reactors:
+      message_filter:
+        logging_level: INFO
+  investor:
+    logging_level: INFO

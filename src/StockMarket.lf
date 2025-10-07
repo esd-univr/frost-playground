@@ -1,0 +1,191 @@
+target Python{
+    fast: True,
+    timeout: 100 sec,
+    files: [
+        "../frost/src/python_lib/frost.py",
+        "../frost/src/python_lib/l_formatter.py",
+        "../frost/src/python_lib/time_utils.py"
+    ],
+    logging: error,
+    single-threaded: false,
+}
+
+import FrostDataModel from "../frost/src/lib/FrostDataModel.lf"
+import FrostBase from "../frost/src/lib/FrostBase.lf"
+
+preamble{=
+    import uuid
+    from frost import *
+    import random
+=}
+
+
+reactor StockMarketAction extends FrostDataModel{
+
+    state action_1
+    state action_2
+    state action_3
+
+    reaction (startup){=
+        self.action_1 = self.data_model.get_node("root/action_1")
+        self.action_2 = self.data_model.get_node("root/action_2")
+        self.action_3 = self.data_model.get_node("root/action_3")
+    =}
+
+    timer update_timer(1 sec, 100 msec)
+    reaction(update_timer){=
+        change1 = random.choice([-1, 1])
+        if self.action_1.value + change1 > 0:
+            self.action_1.value += change1
+        change2 = random.choice([-2, 2])
+        if self.action_2.value + change2 > 0:
+            self.action_2.value += change2
+        change3 = random.choice([-3, 3])
+        if self.action_3.value + change3 > 0:
+            self.action_3.value += change3
+    =}
+
+}
+
+reactor Investor extends FrostBase{
+
+    input channel_in
+    output channel_out
+
+    state threshold = 20.0
+    state money = 1000.0
+
+    state action_1 = 0
+    state action_2 = 0
+    state action_3 = 0
+
+    state message_list = []
+    logical action read_stock_market
+
+    reaction(shutdown){=
+        self.logger.info(f"Investor shutting down with total money: {self.money}, with actions: {self.action_1}, {self.action_2}, {self.action_3}")
+    =}
+
+    state counter = 0
+    reaction(read_stock_market) -> read_stock_market, channel_out{=
+        self._set_channel_out_port(self.message_list[self.counter], channel_out)
+        self.counter += 1
+        if self.counter == 3:
+            return 0
+        read_stock_market.schedule(MSEC(10))
+       
+    =}
+
+    timer check(0 sec, 10 sec)
+    reaction(check) -> read_stock_market{=
+        read_stock_market.schedule(0)
+        self.counter = 0
+    =}
+
+    reaction (startup){=
+        self.message_list.append(
+              FrostMessage(
+                sender=self.name,
+                target="stock_market",
+                identifier=str(uuid.uuid4()),
+                header=FrostHeader(
+                     type=MsgType.REQUEST,
+                     version=(1, 0, 0),
+                     namespace=MsgNamespace.VARIABLE,
+                     msg_name=VariableMsgName.READ,
+                ),
+                payload=VariablePayload(
+                     node="root/action_1",
+                     value=None,
+                ),
+              )
+        )
+        self.message_list.append(
+                FrostMessage(
+                sender=self.name,
+                target="stock_market",
+                identifier=str(uuid.uuid4()),
+                header=FrostHeader(
+                    type=MsgType.REQUEST,
+                    version=(1, 0, 0),
+                    namespace=MsgNamespace.VARIABLE,
+                    msg_name=VariableMsgName.READ,
+                ),
+                payload=VariablePayload(
+                    node="root/action_2",
+                    value=None,
+                ),
+                )
+        )
+        self.message_list.append(
+                FrostMessage(
+                sender=self.name,
+                target="stock_market",
+                identifier=str(uuid.uuid4()),
+                header=FrostHeader(
+                    type=MsgType.REQUEST,
+                    version=(1, 0, 0),
+                    namespace=MsgNamespace.VARIABLE,
+                    msg_name=VariableMsgName.READ,
+                ),
+                payload=VariablePayload(
+                    node="root/action_3",
+                    value=None,
+                ),
+                )
+        )
+    =}
+
+    reaction(channel_in){=
+        message = self._get_input_values(channel_in)[0][1][0]
+        action = message.payload.node.split("/")[-1]
+        value = message.payload.value
+        self.logger.info(f"Received {action} with value: {value}")
+        percentage = float(value / self.threshold) * 100.0
+        match action:
+            case "action_1":
+                if percentage > 100.0 and self.action_1 > 0:
+                    self.money += value * self.action_1
+                    self.logger.info(f"Selling action_1 at {value}, money: {value * self.action_1}")
+                    self.action_1 = 0
+                elif percentage < 100.0:
+                    num_to_buy = int(100 - percentage)
+                    cost = num_to_buy * value
+                    if cost < self.money:
+                        self.action_1 += num_to_buy
+                        self.money -= cost
+                        self.logger.info(f"Buying action_1 at {value}, cost: {cost}, total actions: {self.action_1}, remaining money: {self.money}")
+            case "action_2":
+                if percentage > 100.0 and self.action_2 > 0:
+                    self.money += value * self.action_2
+                    self.action_2 = 0
+                elif percentage < 100.0:
+                    num_to_buy = int(100 - percentage)
+                    cost = num_to_buy * value
+                    if cost < self.money:
+                        self.action_2 += num_to_buy
+                        self.money -= cost
+                        self.logger.info(f"Buying action_2 at {value}, cost: {cost}, total actions: {self.action_2}, remaining money: {self.money}")
+            case "action_3":
+                if percentage > 100.0 and self.action_3 > 0:
+                    self.money += value * self.action_3                    
+                    self.logger.info(f"Selling action_3 at {value}, money: {value * self.action_3}")
+                    self.action_3 = 0
+                elif percentage < 100.0:
+                    num_to_buy = int(100 - percentage)
+                    cost = num_to_buy * value
+                    if cost < self.money:
+                        self.action_3 += num_to_buy
+                        self.money -= cost
+                        self.logger.info(f"Buying action_3 at {value}, cost: {cost}, total actions: {self.action_3}, remaining money: {self.money}")
+    =}
+
+}
+
+main reactor{
+    stock_market_action = new StockMarketAction(name = "stock_market")
+    investor = new Investor(name = "investor")
+
+    stock_market_action.channel_out -> investor.channel_in after 0
+    investor.channel_out -> stock_market_action.channel_in after 0
+}

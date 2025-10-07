@@ -1,0 +1,20 @@
+name: "stock_market" # name of the machine
+machine_category: "unknown" # category of the machine
+machine_type: "unknown" # type of the machine
+machine_model: "unknown" # model of the machine
+description: "User" # description of the machine
+root:
+  !!FolderNode
+  name: "root"
+  description: "none"
+  children:
+    - !!NumericalVariableNode
+      name: "action_1"
+      initial_value: 27.5
+    - !!NumericalVariableNode
+      name: "action_2"
+      initial_value: 25.0
+    - !!NumericalVariableNode
+      name: "action_3"
+      initial_value: 30.75
+    
