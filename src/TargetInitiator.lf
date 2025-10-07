@@ -11,15 +11,88 @@ target Python{
 }
 
 import FrostBus from "../frost/src/lib/FrostBus.lf"
-import Target from "Target.lf"
-import Initiator from "Initiator.lf"
-
-
+import FrostMachine from "../frost/src/lib/FrostMachine.lf"
+import FrostBase from "../frost/src/lib/FrostBase.lf"
 
 preamble{= 
     import uuid
     from frost import *
 =}
+
+reactor Initiator extends FrostBase{
+
+
+    input channel_in
+    output channel_out
+
+    reaction(startup) -> channel_out{=
+        self.logger.info(f"Initiator {self.name} started")
+        message = FrostMessage(
+            sender=self.name,
+            target="frost_bus",
+            identifier=str(uuid.uuid4()),
+            header=FrostHeader(
+                type=MsgType.REQUEST,
+                version=(1, 0, 0),
+                namespace=MsgNamespace.PROTOCOL,
+                msg_name=ProtocolMsgName.REGISTER,
+            ),
+            payload=ProtocolPayload(),
+        )
+        self.logger.info(f"Initiator {self.name} sent a message: {message}")
+        channel_out.set([message])
+    =}
+
+    input start
+    reaction(start) -> channel_out{=
+        self.logger.info(f"User {self.name} start signal received: {start.value}")
+        if start.value:
+            message = FrostMessage(
+                sender=self.name,
+                target="target",
+                identifier=str(uuid.uuid4()),
+                header=FrostHeader(
+                    type=MsgType.REQUEST,
+                    version=(1, 0, 0),
+                    namespace=MsgNamespace.METHOD,
+                    msg_name=MethodMsgName.INVOKE,
+                ),
+                payload=MethodPayload(
+                    node="Methods/answer",
+                    args=["What is your name?"],
+                    kwargs={},
+                ),
+            )
+            self.logger.info(f"{self.name}: {message.payload.args[0]}")
+            self._set_channel_out_port(message, channel_out)
+    =}
+
+    reaction(channel_in) -> channel_out{=
+        self.logger.info(f"Initiator {self.name} received a message: {channel_in.value}")
+        message = channel_in.value[0]
+        if message.header.type == MsgType.RESPONSE and message.header.namespace == MsgNamespace.METHOD:
+            self.logger.info(f"{message.sender}: {message.payload.ret["response"]}")
+    =}
+
+}
+
+reactor Target extends FrostMachine{
+    input start
+    state method_node
+    state student_name = "Bob"
+    reaction(startup){=
+        method_node = self.data_model.get_node("Methods/answer")
+        method_node.callback = self.answer
+    =}
+
+    method answer(message){=
+        self.logger.info(f"{self.name} received a message: {message}")
+        if message == None or message == "":
+            raise Exception("Input message is None or empty")
+        return self.student_name
+    =}
+
+}
 
 main reactor{
     '''

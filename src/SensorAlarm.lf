@@ -1,0 +1,82 @@
+target Python{
+    fast: True,
+    files: [
+        "../frost/src/python_lib/frost.py",
+        "../frost/src/python_lib/l_formatter.py",
+        "../frost/src/python_lib/time_utils.py"
+    ],
+    logging: error,
+    single-threaded: false,
+}
+
+import FrostMachine from "../frost/src/lib/FrostMachine.lf"
+import FrostBus from "../frost/src/lib/FrostBus.lf"
+
+preamble{=
+    import uuid
+    from frost import *
+    import random
+=}
+
+reactor Sensor extends FrostMachine{
+
+    state detected
+
+    reaction(startup){=
+        self.detected = self.data_model.get_node("root/detected")
+    =}
+
+    timer check_timer(1000 msec, 3000 msec)
+
+    reaction(check_timer) -> channel_out{=
+        # Simulate random detection
+        new_value = random.random()
+        self.detected.value = True if new_value > 0.9 else False
+
+        message = FrostMessage(
+            sender=self.name,
+            target="alarm",
+            identifier=str(uuid.uuid4()),
+            header=FrostHeader(
+                type=MsgType.REQUEST,
+                version=(1, 0, 0),
+                namespace=MsgNamespace.VARIABLE,
+                msg_name=VariableMsgName.WRITE,
+            ),
+            payload=VariablePayload(
+                node="root/ringing",
+                value=self.detected.value,
+            ),
+        )
+        self._set_channel_out_port(message, channel_out)
+    =}
+
+}
+
+reactor Alarm extends FrostMachine{
+
+    state ringing
+
+    reaction(startup){=
+        self.ringing = self.data_model.get_node("root/ringing")
+    =}
+
+    timer check_status(1 sec, 1 sec)
+
+    reaction(check_status){=
+        if self.ringing.value:
+            self.logger.error(f"Alarm is RINGING!")
+        else:
+            self.logger.info(f"\n")
+    =}
+}
+
+main reactor{
+    frost_bus = new FrostBus(name = "frost_bus", width = 2)
+    sensor = new Sensor(name = "sensor")
+    alarm = new Alarm(name = "alarm")
+
+    frost_bus.channel_out -> sensor.channel_in, alarm.channel_in after 10 msec
+    sensor.channel_out, alarm.channel_out -> frost_bus.channel_in after 10 msec
+
+}

@@ -31,3 +31,11 @@ reactors:
     reactors:
       message_filter:
         logging_level: INFO
+  sensor:
+    logging_level: INFO
+    parameters:
+      data_model_path: "resources/data_model/sensor.yml"
+  alarm:
+    logging_level: INFO
+    parameters:
+      data_model_path: "resources/data_model/alarm.yml"

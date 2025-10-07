@@ -1,0 +1,14 @@
+name: "alarm" # name of the machine
+machine_category: "unknown" # category of the machine
+machine_type: "unknown" # type of the machine
+machine_model: "unknown" # model of the machine
+description: "User" # description of the machine
+root:
+  !!FolderNode
+  name: "root"
+  description: "none"
+  children:
+    - !!BooleanVariableNode
+      name: "ringing"
+      initial_value: False
+    
