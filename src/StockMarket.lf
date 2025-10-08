@@ -15,7 +15,7 @@ preamble{=
 =}
 
 
-reactor StockMarketAction extends FrostDataModel{
+reactor Stock_Market extends FrostDataModel{
     '''
     A simple reactor that represents three actions in the stock market.
     The prices of the actions change randomly every 100 msec.
@@ -192,7 +192,7 @@ reactor Investor extends FrostBase{
 }
 
 main reactor{
-    stock_market_action = new StockMarketAction(name = "stock_market")
+    stock_market_action = new Stock_Market(name = "stock_market")
     investor = new Investor(name = "investor")
 
     stock_market_action.channel_out -> investor.channel_in after 0
