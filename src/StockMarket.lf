@@ -1,11 +1,6 @@
 target Python{
     fast: True,
     timeout: 100 sec,
-    files: [
-        "../frost/src/python_lib/frost.py",
-        "../frost/src/python_lib/l_formatter.py",
-        "../frost/src/python_lib/time_utils.py"
-    ],
     logging: error,
     single-threaded: false,
 }
@@ -21,6 +16,10 @@ preamble{=
 
 
 reactor StockMarketAction extends FrostDataModel{
+    '''
+    A simple reactor that represents three actions in the stock market.
+    The prices of the actions change randomly every 100 msec.
+    '''
 
     state action_1
     state action_2
@@ -48,6 +47,11 @@ reactor StockMarketAction extends FrostDataModel{
 }
 
 reactor Investor extends FrostBase{
+    '''
+    A simple reactor that represents an investor in the stock market.
+    The investor buys actions when the price is below a certain threshold
+    and sells actions when the price is above the threshold.
+    '''
 
     input channel_in
     output channel_out
@@ -66,6 +70,7 @@ reactor Investor extends FrostBase{
         self.logger.info(f"Investor shutting down with total money: {self.money}, with actions: {self.action_1}, {self.action_2}, {self.action_3}")
     =}
 
+    // Counter to keep track of which message to send next
     state counter = 0
     reaction(read_stock_market) -> read_stock_market, channel_out{=
         self._set_channel_out_port(self.message_list[self.counter], channel_out)
@@ -76,13 +81,16 @@ reactor Investor extends FrostBase{
        
     =}
 
+    // Every 10 seconds, reset the counter and start reading the stock market again
     timer check(0 sec, 10 sec)
     reaction(check) -> read_stock_market{=
         read_stock_market.schedule(0)
         self.counter = 0
     =}
 
+    // Initialize the messag list with three read requests
     reaction (startup){=
+        
         self.message_list.append(
               FrostMessage(
                 sender=self.name,
@@ -136,6 +144,7 @@ reactor Investor extends FrostBase{
         )
     =}
 
+    // Reaction to process incoming messages from the stock market
     reaction(channel_in){=
         message = self._get_input_values(channel_in)[0][1][0]
         action = message.payload.node.split("/")[-1]

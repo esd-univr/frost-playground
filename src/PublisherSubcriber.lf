@@ -1,10 +1,5 @@
 target Python{
     fast: True,
-    files: [
-        "../frost/src/python_lib/frost.py",
-        "../frost/src/python_lib/l_formatter.py",
-        "../frost/src/python_lib/time_utils.py"
-    ],
     logging: error,
     single-threaded: false,
 }
@@ -17,6 +12,10 @@ preamble{=
 =}
 
 reactor Publisher extends FrostDataModel{
+    '''
+    A simple publisher that updates a word node every 2 seconds and publishes its value.
+    '''
+
     state words = ["Hello", "world", "this", "is", "a", "test", "message"]
     state word_node
 
@@ -38,7 +37,11 @@ reactor Publisher extends FrostDataModel{
     =}
 }
 
-reactor Subscriber extends FrostDataModel{    
+reactor Subscriber extends FrostDataModel{  
+    '''
+    A simple subscriber that listens for updates to the word node and appends received words to a sentence node.
+    '''
+    
     state sentence
 
     reaction(startup) -> channel_out{=

@@ -1,11 +1,6 @@
 target Python{
     fast: True,
     timeout: 10s,
-    files: [
-        "../frost/src/python_lib/frost.py",
-        "../frost/src/python_lib/l_formatter.py",
-        "../frost/src/python_lib/time_utils.py"
-    ],
     logging: error,
     single-threaded: false,
 }
@@ -20,6 +15,11 @@ preamble{=
 =}
 
 reactor Initiator extends FrostBase{
+    '''
+    A simple reactor that represents an initiator in the Frost protocol.
+    The initiator sends a message to the target invoking a method "answer" with a string
+    argument. The initiator waits for the response from the target and prints it.
+    '''
 
 
     input channel_in
@@ -77,6 +77,11 @@ reactor Initiator extends FrostBase{
 }
 
 reactor Target extends FrostMachine{
+    '''
+    A simple reactor that represents a target in the Frost protocol.
+    The target receives a message from the initiator invoking a method "answer" with a string
+    argument. The target executes the method and returns a string as a response.
+    '''
     input start
     state method_node
     state student_name = "Bob"

@@ -1,10 +1,5 @@
 target Python{
     fast: True,
-    files: [
-        "../frost/src/python_lib/frost.py",
-        "../frost/src/python_lib/l_formatter.py",
-        "../frost/src/python_lib/time_utils.py"
-    ],
     logging: error,
     single-threaded: false,
 }
@@ -19,6 +14,9 @@ preamble{=
 =}
 
 reactor Sensor extends FrostMachine{
+    '''
+    A simple sensor that randomly detects an event and triggers an alarm.
+    '''
 
     state detected
 
@@ -55,6 +53,9 @@ reactor Sensor extends FrostMachine{
 }
 
 reactor Alarm extends FrostMachine{
+    '''
+    A simple alarm that reacts to sensor events.
+    '''
 
     state ringing
 
