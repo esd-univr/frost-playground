@@ -48,3 +48,26 @@ reactors:
         logging_level: INFO
   investor:
     logging_level: INFO
+  scheduler:
+    logging_level: INFO
+    parameters:
+      data_model_path: "resources/data_model/scheduler.yml"
+      scheduling_instance: "resources/scheduling_instances/test_scheduler.json"
+    reactors:
+      message_filter:
+        logging_level: WARNING
+  machine_1:
+    logging_level: INFO
+    parameters:
+      data_model_path: "resources/data_model/machine_1.yml"
+    reactors:
+      message_filter:
+        logging_level: WARNING
+  machine_2:
+    logging_level: INFO
+    parameters:
+      data_model_path: "resources/data_model/machine_2.yml"
+    reactors:
+      message_filter:
+        logging_level: WARNING
+  
